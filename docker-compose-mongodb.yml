@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: personapp-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: persona_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./scripts:/scripts
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  app-rest:
+    build:
+      context: .
+      target: rest
+    container_name: personapp-rest-mongodb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mongodb
+      SPRING_DATA_MONGODB_HOST: mongodb
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: persona_db
+      SPRING_DATA_MONGODB_USERNAME: persona_db
+      SPRING_DATA_MONGODB_PASSWORD: persona_db
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./logs:/app/logs
+
+  app-cli:
+    build:
+      context: .
+      target: cli
+    container_name: personapp-cli-mongodb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mongodb
+      SPRING_DATA_MONGODB_HOST: mongodb
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: persona_db
+      SPRING_DATA_MONGODB_USERNAME: persona_db
+      SPRING_DATA_MONGODB_PASSWORD: persona_db
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./logs:/app/logs

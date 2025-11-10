@@ -2,8 +2,6 @@ package co.edu.javeriana.as.personapp.application.usecase;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import co.edu.javeriana.as.personapp.application.port.in.PersonInputPort;
 import co.edu.javeriana.as.personapp.application.port.out.PersonOutputPort;
 import co.edu.javeriana.as.personapp.common.annotations.UseCase;
@@ -20,8 +18,8 @@ public class PersonUseCase implements PersonInputPort {
 	
 	private PersonOutputPort personPersintence;
 	
-	public PersonUseCase(@Qualifier("personOutputAdapterMaria") PersonOutputPort personPersintence) {
-		this.personPersintence=personPersintence;
+	public PersonUseCase() {
+		// El adapter será configurado por los input adapters usando setPersintence()
 	}
 	
 	@Override
