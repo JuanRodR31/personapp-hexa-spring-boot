@@ -16,7 +16,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<revision>0.0.1-SNAPSHOT</revision>
-		<global.java.version>21</global.java.version>
+		<global.java.version>17</global.java.version>
 		<global.springframework.boot.version>3.2.11</global.springframework.boot.version>
 		<global.springframework.version>6.1.14</global.springframework.version>
 		<lombok.version>1.18.36</lombok.version>
@@ -50,7 +50,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.13.0</version>
 					<configuration>
-						<release>21</release>
+						<release>17</release>
 						<encoding>UTF-8</encoding>
 						<annotationProcessorPaths>
 							<path>

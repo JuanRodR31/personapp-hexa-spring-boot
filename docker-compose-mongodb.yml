@@ -33,7 +33,7 @@ services:
       SPRING_DATA_MONGODB_DATABASE: persona_db
       SPRING_DATA_MONGODB_USERNAME: persona_db
       SPRING_DATA_MONGODB_PASSWORD: persona_db
-      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: persona_db
       SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
     ports:
       - "3001:3000"
@@ -55,7 +55,7 @@ services:
       SPRING_DATA_MONGODB_DATABASE: persona_db
       SPRING_DATA_MONGODB_USERNAME: persona_db
       SPRING_DATA_MONGODB_PASSWORD: persona_db
-      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: persona_db
       SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
     stdin_open: true
     tty: true

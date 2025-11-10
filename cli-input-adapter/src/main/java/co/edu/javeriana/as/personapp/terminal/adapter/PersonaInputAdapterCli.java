@@ -36,10 +36,10 @@ public class PersonaInputAdapterCli {
 	public void setPersonOutputPortInjection(String dbOption) throws InvalidOptionException {
 		if (dbOption.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
 			personInputPort = new PersonUseCase();
-			personInputPort.setPersintence(personOutputPortMaria);
+			personInputPort.setPersistence(personOutputPortMaria);
 		} else if (dbOption.equalsIgnoreCase(DatabaseOption.MONGO.toString())) {
 			personInputPort = new PersonUseCase();
-			personInputPort.setPersintence(personOutputPortMongo);
+			personInputPort.setPersistence(personOutputPortMongo);
 		} else {
 			throw new InvalidOptionException("Invalid database option: " + dbOption);
 		}
