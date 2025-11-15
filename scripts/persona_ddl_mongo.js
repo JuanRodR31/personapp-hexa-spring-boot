@@ -1,24 +1,10 @@
 // =====================================================
 // Script DDL para MongoDB - Base de datos persona_db
-// Descripción: Crea usuario, base de datos y colecciones
+// Descripción: Crea base de datos y colecciones
 // =====================================================
 
-use admin
-
-// Crear usuario con permisos en la base de datos persona_db
-db.createUser({
-  user: "persona_db",
-  pwd: "persona_db",
-  roles: [
-    { role: "read", db: "persona_db" },
-    { role: "readWrite", db: "persona_db" },
-    { role: "dbAdmin", db: "persona_db" }
-  ],
-  mechanisms: ["SCRAM-SHA-1","SCRAM-SHA-256"]
-})
-
 // Cambiar a la base de datos persona_db
-use persona_db
+db = db.getSiblingDB('persona_db');
 
 // =====================================================
 // Colección: profesion

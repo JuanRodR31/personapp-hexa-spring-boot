@@ -2,29 +2,46 @@
 
 Aplicación de ejemplo que implementa Arquitectura Hexagonal (Clean Architecture) con Spring Boot para la gestión de personas, profesiones, teléfonos y estudios.
 
+## 🚀 Quick Start con Docker
+
+```bash
+# 1. Compilar el proyecto
+mvn clean package -DskipTests
+
+# 2. Iniciar todos los servicios (MariaDB + MongoDB + REST API)
+docker-compose up -d
+
+# 3. Abrir el frontend
+# Windows: Start-Process "http://localhost:3000"
+# Linux/Mac: open http://localhost:3000
+```
+
+✅ **Listo!** La aplicación está corriendo en http://localhost:3000 con datos de ejemplo en ambas bases de datos.
+
 ## ✨ Características Principales
 
 - 🏗️ **Arquitectura Hexagonal** - Separación clara de capas y responsabilidades
-- 🎨 **Frontend Web Integrado** - Interfaz gráfica moderna y responsive
+- 🎨 **Frontend Web Integrado** - Interfaz gráfica moderna y responsive con tablas hermosas
 - 🔌 **Múltiples Adaptadores** - REST API y CLI
-- 💾 **Soporte Multi-Base de Datos** - MariaDB y MongoDB
+- 💾 **Soporte Multi-Base de Datos** - MariaDB y MongoDB simultáneamente
 - 📚 **Documentación API** - Swagger/OpenAPI integrado
 - 🌐 **CORS Configurado** - Preparado para desarrollo cross-origin
-- 🐳 **Docker Ready** - Configuración completa con Docker Compose
+- 🐳 **Docker Ready** - Configuración completa con Docker Compose y datos iniciales automáticos
 
 ## 📋 Tabla de Contenidos
 
-- [Características Principales](#características-principales)
-- [Requisitos Previos](#requisitos-previos)
-- [Arquitectura del Proyecto](#arquitectura-del-proyecto)
-- [Configuración Inicial](#configuración-inicial)
-- [Ejecución con Docker](#ejecución-con-docker)
-- [Ejecución Local (sin Docker)](#ejecución-local-sin-docker)
-- [Acceso a las Aplicaciones](#acceso-a-las-aplicaciones)
-- [Frontend Web](#frontend-web)
-- [API REST](#api-rest)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Troubleshooting](#troubleshooting)
+- [Quick Start con Docker](#-quick-start-con-docker)
+- [Características Principales](#-características-principales)
+- [Requisitos Previos](#-requisitos-previos)
+- [Arquitectura del Proyecto](#️-arquitectura-del-proyecto)
+- [Configuración Inicial](#-configuración-inicial)
+- [Ejecución con Docker](#-ejecución-con-docker)
+- [Ejecución Local (sin Docker)](#-ejecución-local-sin-docker)
+- [Acceso a las Aplicaciones](#-acceso-a-las-aplicaciones)
+- [Frontend Web](#-frontend-web)
+- [API REST](#-api-rest)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Troubleshooting](#-troubleshooting)
 
 ## 🔧 Requisitos Previos
 
@@ -90,89 +107,192 @@ cd personapp-hexa-spring-boot
 
 ## 🐳 Ejecución con Docker
 
-### Opción A: Ejecutar con MariaDB
+### 🚀 Quick Start (Recomendado)
+
+La forma más rápida de ejecutar la aplicación con **ambas bases de datos** (MariaDB y MongoDB):
 
 #### 1. Compilar el proyecto
 ```bash
 mvn clean package -DskipTests
 ```
 
-#### 2. Levantar los contenedores
+#### 2. Iniciar todos los servicios
+```bash
+docker-compose up -d
+```
+
+Este comando levantará automáticamente:
+- ✅ **MariaDB** en puerto 3308 con datos iniciales
+- ✅ **MongoDB** en puerto 27017 con datos iniciales
+- ✅ **REST API** en puerto 3000 conectada a ambas bases de datos
+
+#### 3. Verificar que todo esté corriendo
+```bash
+docker-compose ps
+```
+
+Deberías ver todos los servicios con estado `healthy`:
+```
+NAME                STATUS
+personapp-mariadb   Up (healthy)
+personapp-mongodb   Up (healthy)
+personapp-rest      Up
+```
+
+#### 4. Acceder a la aplicación
+- **🎨 Frontend Web**: http://localhost:3000
+- **📚 Swagger UI**: http://localhost:3000/swagger-ui/index.html
+- **🔌 API MariaDB**: http://localhost:3000/api/v1/persona/maria
+- **🔌 API MongoDB**: http://localhost:3000/api/v1/persona/mongo
+
+#### 5. Verificar datos
+```powershell
+# Contar personas en MariaDB
+curl http://localhost:3000/api/v1/persona/maria/count
+
+# Contar personas en MongoDB
+curl http://localhost:3000/api/v1/persona/mongo/count
+```
+
+Ambos deberían retornar `8`.
+
+### 🎯 Datos Iniciales Incluidos
+
+La configuración de Docker incluye automáticamente datos de ejemplo:
+- 👥 **8 personas** (Pepe, Pepito, Pepa, Pepita, Fede, Ana, Carlos, María)
+- 💼 **6 profesiones** (Ing. Sistemas, Medicina, Derecho, Administración, Psicología, Arquitectura)
+- 📱 **9 teléfonos** distribuidos entre las personas
+- 🎓 **8 estudios** (relaciones persona-profesión)
+
+### 🔧 Comandos Útiles
+
+#### Ver logs
+```bash
+# Ver logs de todos los servicios
+docker-compose logs -f
+
+# Ver logs de un servicio específico
+docker-compose logs -f app-rest
+docker-compose logs -f mariadb
+docker-compose logs -f mongodb
+```
+
+#### Detener servicios
+```bash
+# Detener todos los servicios
+docker-compose down
+
+# Detener y eliminar volúmenes (borra los datos)
+docker-compose down -v
+```
+
+#### Reiniciar servicios
+```bash
+# Reiniciar todos los servicios
+docker-compose restart
+
+# Reiniciar solo la API REST
+docker-compose restart app-rest
+```
+
+#### Reconstruir después de cambios en el código
+```bash
+# 1. Recompilar el proyecto
+mvn clean package -DskipTests
+
+# 2. Reconstruir la imagen Docker
+docker-compose build --no-cache app-rest
+
+# 3. Reiniciar solo el servicio REST
+docker-compose up -d app-rest
+```
+
+### 📝 Script de Ayuda (PowerShell)
+
+El proyecto incluye un script de ayuda `docker-helper.ps1` con comandos útiles:
+
+```powershell
+# Ver todos los comandos disponibles
+.\docker-helper.ps1 help
+
+# Construir imágenes
+.\docker-helper.ps1 build
+
+# Iniciar todos los servicios
+.\docker-helper.ps1 up
+
+# Ver estado de los servicios
+.\docker-helper.ps1 ps
+
+# Ver logs en tiempo real
+.\docker-helper.ps1 logs
+
+# Detener servicios
+.\docker-helper.ps1 down
+
+# Reiniciar servicios
+.\docker-helper.ps1 restart
+
+# Limpiar todo (incluyendo volúmenes)
+.\docker-helper.ps1 clean
+```
+
+### 🔍 Verificación de la Instalación
+
+Ejecuta estos comandos para verificar que todo funciona correctamente:
+
+```powershell
+# 1. Estado de contenedores
+docker-compose ps
+
+# 2. Datos en MariaDB
+docker exec personapp-mariadb mariadb -u persona_db -ppersona_db persona_db -e "SELECT COUNT(*) as total FROM persona"
+
+# 3. Datos en MongoDB
+docker exec personapp-mongodb mongosh -u persona_db -p persona_db --authenticationDatabase admin --eval "db.getSiblingDB('persona_db').persona.countDocuments()"
+
+# 4. API funcionando
+curl http://localhost:3000/api/v1/persona/maria/count
+curl http://localhost:3000/api/v1/persona/mongo/count
+```
+
+### 📖 Documentación Adicional
+
+Para más detalles sobre la configuración de Docker, consulta:
+- **[DOCKER.md](DOCKER.md)** - Guía completa de Docker con troubleshooting
+- **[DOCKER_SETUP_COMPLETE.md](DOCKER_SETUP_COMPLETE.md)** - Resumen de configuración y verificación
+
+### 🎓 Configuraciones Avanzadas
+
+#### Ejecutar solo con MariaDB
 ```bash
 docker-compose -f docker-compose-mariadb.yml up -d
 ```
 
-#### 3. Ejecutar los scripts de base de datos
-
-**Crear las tablas (DDL):**
-```bash
-docker exec -i personapp-mariadb mariadb -uroot -proot persona_db < scripts/persona_ddl_maria.sql
-```
-
-**Insertar datos iniciales (DML):**
-```bash
-docker exec -i personapp-mariadb mariadb -uroot -proot persona_db < scripts/persona_dml_maria.sql
-```
-
-#### 4. Acceder a las aplicaciones
-- **REST API**: http://localhost:3000
-- **Swagger UI**: http://localhost:3000/swagger-ui.html
-- **CLI**: 
-  ```bash
-  docker attach personapp-cli-mariadb
-  ```
-  Para salir del CLI sin detener el contenedor: `Ctrl+P` seguido de `Ctrl+Q`
-
-### Opción B: Ejecutar con MongoDB
-
-#### 1. Compilar el proyecto
-```bash
-mvn clean package -DskipTests
-```
-
-#### 2. Levantar los contenedores
+#### Ejecutar solo con MongoDB
 ```bash
 docker-compose -f docker-compose-mongodb.yml up -d
 ```
 
-#### 3. Ejecutar los scripts de base de datos
-
-**Crear las colecciones (DDL):**
-```bash
-docker exec -i personapp-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin persona_db < scripts/persona_ddl_mongo.js
+#### Cambiar puertos
+Edita el archivo `docker-compose.yml` y modifica la sección `ports`:
+```yaml
+services:
+  app-rest:
+    ports:
+      - "8080:3000"  # Cambia el primer número (puerto del host)
 ```
 
-**Insertar datos iniciales (DML):**
+#### Ver base de datos directamente
+
+**MariaDB:**
 ```bash
-docker exec -i personapp-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin persona_db < scripts/persona_dml_mongo.js
+docker exec -it personapp-mariadb mariadb -u persona_db -ppersona_db persona_db
 ```
 
-#### 4. Acceder a las aplicaciones
-- **REST API**: http://localhost:3001
-- **Swagger UI**: http://localhost:3001/swagger-ui.html
-- **CLI**: 
-  ```bash
-  docker attach personapp-cli-mongodb
-  ```
-  Para salir del CLI sin detener el contenedor: `Ctrl+P` seguido de `Ctrl+Q`
-
-### Detener los contenedores
-
-**Para MariaDB:**
+**MongoDB:**
 ```bash
-docker-compose -f docker-compose-mariadb.yml down
-```
-
-**Para MongoDB:**
-```bash
-docker-compose -f docker-compose-mongodb.yml down
-```
-
-**Para eliminar también los volúmenes (datos):**
-```bash
-docker-compose -f docker-compose-mariadb.yml down -v
-# o
-docker-compose -f docker-compose-mongodb.yml down -v
+docker exec -it personapp-mongodb mongosh -u persona_db -p persona_db --authenticationDatabase admin persona_db
 ```
 
 ## 💻 Ejecución Local (sin Docker)
@@ -251,17 +371,17 @@ mvn spring-boot:run -Dspring-boot.run.profiles=mongodb
 La aplicación incluye un frontend web moderno y responsive integrado con Spring Boot.
 
 **URL de Acceso:**
-- **Local**: http://localhost:3000
-- **Docker MariaDB**: http://localhost:3000
-- **Docker MongoDB**: http://localhost:3001
+- **Docker (Recomendado)**: http://localhost:3000
+- **Local (sin Docker)**: http://localhost:3000
 
 #### Características del Frontend:
-- ✅ Interfaz moderna y responsive
+- ✅ Interfaz moderna y responsive con tablas hermosas
 - ✅ Gestión completa de CRUD para todas las entidades
 - ✅ Selector de base de datos (MariaDB/MongoDB)
-- ✅ Visualización de respuestas JSON en tiempo real
+- ✅ Visualización en tablas estilizadas en lugar de JSON
 - ✅ Indicadores de carga durante las peticiones
 - ✅ Sin necesidad de configuración adicional
+- ✅ Incluido automáticamente en el JAR de Spring Boot
 
 #### Módulos Disponibles:
 - 👤 **Personas** - Crear, listar, buscar, actualizar y eliminar personas
@@ -271,17 +391,43 @@ La aplicación incluye un frontend web moderno y responsive integrado con Spring
 
 ### 🔌 REST API
 
-**Con MariaDB:**
+**Con Docker (ambas bases de datos disponibles):**
 - URL Base: http://localhost:3000
-- Swagger UI: http://localhost:3000/swagger-ui.html
+- Swagger UI: http://localhost:3000/swagger-ui/index.html
 - API Docs: http://localhost:3000/v3/api-docs
+- MariaDB endpoints: `/api/v1/{entity}/maria`
+- MongoDB endpoints: `/api/v1/{entity}/mongo`
 
-**Con MongoDB:**
-- URL Base: http://localhost:3001
-- Swagger UI: http://localhost:3001/swagger-ui.html
-- API Docs: http://localhost:3001/v3/api-docs
+**Ejemplos de endpoints:**
+```bash
+# Listar personas de MariaDB
+curl http://localhost:3000/api/v1/persona/maria
+
+# Listar personas de MongoDB
+curl http://localhost:3000/api/v1/persona/mongo
+
+# Contar personas en MariaDB
+curl http://localhost:3000/api/v1/persona/maria/count
+
+# Contar personas en MongoDB
+curl http://localhost:3000/api/v1/persona/mongo/count
+```
 
 ### CLI (Interfaz de Línea de Comandos)
+
+**Nota**: La aplicación CLI está disponible solo en las configuraciones individuales de Docker:
+
+```bash
+# Para MariaDB
+docker-compose -f docker-compose-mariadb.yml up -d
+docker attach personapp-cli-mariadb
+
+# Para MongoDB
+docker-compose -f docker-compose-mongodb.yml up -d
+docker attach personapp-cli-mongodb
+```
+
+Para salir del CLI sin detener el contenedor: `Ctrl+P` seguido de `Ctrl+Q`
 
 La aplicación CLI proporciona un menú interactivo para gestionar:
 - Personas
@@ -412,10 +558,10 @@ personapp-hexa-spring-boot/
 
 ### Error: Puerto ya en uso
 
-**Problema**: `Port 3000/3001/3308/27017 is already in use`
+**Problema**: `Port 3000/3308/27017 is already in use`
 
 **Solución**:
-```bash
+```powershell
 # Windows (PowerShell)
 netstat -ano | findstr :3000
 taskkill /PID <PID> /F
@@ -425,7 +571,72 @@ lsof -i :3000
 kill -9 <PID>
 ```
 
-O cambia el puerto en el archivo `docker-compose-*.yml`
+O cambia el puerto en el archivo `docker-compose.yml`:
+```yaml
+services:
+  app-rest:
+    ports:
+      - "8080:3000"  # Usa el puerto 8080 en lugar de 3000
+```
+
+### Error: Contenedor falla al iniciar (dependency failed to start)
+
+**Problema**: El contenedor `app-rest` no inicia porque las bases de datos no están listas
+
+**Solución**:
+```powershell
+# 1. Ver estado de los contenedores
+docker-compose ps
+
+# 2. Ver logs de las bases de datos
+docker logs personapp-mariadb
+docker logs personapp-mongodb
+
+# 3. Si hay problemas, reiniciar con datos limpios
+docker-compose down -v
+docker-compose up -d
+
+# 4. Esperar a que estén healthy (~15 segundos)
+docker-compose ps
+```
+
+### Error: MongoDB Authentication failed
+
+**Problema**: `Command failed with error 18 (AuthenticationFailed)`
+
+**Solución**:
+Este error ocurre cuando la configuración de autenticación está incorrecta. La aplicación ya está configurada correctamente, pero si persiste:
+
+```powershell
+# 1. Detener y limpiar volúmenes
+docker-compose down -v
+
+# 2. Reiniciar (esto recreará el usuario correctamente)
+docker-compose up -d
+
+# 3. Verificar que MongoDB esté healthy
+docker-compose ps
+
+# 4. Probar la conexión
+curl http://localhost:3000/api/v1/persona/mongo/count
+```
+
+### Error: La base de datos está vacía
+
+**Problema**: Los endpoints retornan listas vacías o `count` retorna `0`
+
+**Solución**:
+```powershell
+# 1. Verificar datos en MariaDB
+docker exec personapp-mariadb mariadb -u persona_db -ppersona_db persona_db -e "SELECT COUNT(*) FROM persona"
+
+# 2. Verificar datos en MongoDB
+docker exec personapp-mongodb mongosh -u persona_db -p persona_db --authenticationDatabase admin --eval "db.getSiblingDB('persona_db').persona.countDocuments()"
+
+# 3. Si no hay datos, reiniciar con volúmenes limpios
+docker-compose down -v
+docker-compose up -d
+```
 
 ### Error: Lombok no funciona
 
@@ -439,26 +650,28 @@ O cambia el puerto en el archivo `docker-compose-*.yml`
    mvn clean install
    ```
 
-### Error: No se puede conectar a la base de datos
+### Error: Cambios en el código no se reflejan
 
-**Problema**: `Connection refused` o `Unknown database`
+**Problema**: Modificaste el código pero los cambios no aparecen en Docker
 
 **Solución**:
-1. Verifica que el contenedor de la base de datos esté corriendo:
-   ```bash
-   docker ps
-   ```
-2. Verifica los logs del contenedor:
-   ```bash
-   docker logs personapp-mariadb
-   # o
-   docker logs personapp-mongodb
-   ```
-3. Ejecuta los scripts de inicialización nuevamente
+```powershell
+# 1. Recompilar el proyecto
+mvn clean package -DskipTests
+
+# 2. Reconstruir la imagen sin cache
+docker-compose build --no-cache app-rest
+
+# 3. Reiniciar el servicio
+docker-compose up -d app-rest
+
+# 4. Ver logs para confirmar
+docker-compose logs -f app-rest
+```
 
 ### Error: Docker build falla
 
-**Problema**: Error durante `docker-compose up`
+**Problema**: Error durante `docker-compose up` o `docker-compose build`
 
 **Solución**:
 1. Asegúrate de haber compilado el proyecto primero:
@@ -467,28 +680,122 @@ O cambia el puerto en el archivo `docker-compose-*.yml`
    ```
 2. Limpia las imágenes de Docker:
    ```bash
-   docker-compose -f docker-compose-mariadb.yml down --rmi all
+   docker-compose down --rmi all
    docker system prune -a
+   ```
+3. Reconstruye desde cero:
+   ```bash
+   docker-compose build --no-cache
+   docker-compose up -d
    ```
 
 ### Ver logs de la aplicación
 
-```bash
-# Logs en tiempo real
-docker logs -f personapp-rest-mariadb
-docker logs -f personapp-cli-mariadb
+```powershell
+# Logs en tiempo real de todos los servicios
+docker-compose logs -f
 
-# Logs guardados en el host
-cat logs/application.log
+# Logs de un servicio específico
+docker-compose logs -f app-rest
+docker-compose logs -f mariadb
+docker-compose logs -f mongodb
+
+# Últimas 50 líneas de logs
+docker-compose logs --tail=50 app-rest
+
+# Logs guardados en el host (si la aplicación está escribiendo archivos)
+Get-Content logs/persona.log -Tail 50 -Wait
 ```
+
+### Reiniciar completamente (solución nuclear)
+
+Si nada funciona, intenta esto:
+
+```powershell
+# 1. Detener todo y limpiar
+docker-compose down -v
+docker system prune -a -f
+
+# 2. Recompilar el proyecto
+mvn clean package -DskipTests
+
+# 3. Reconstruir e iniciar
+docker-compose build --no-cache
+docker-compose up -d
+
+# 4. Esperar y verificar
+Start-Sleep -Seconds 15
+docker-compose ps
+
+# 5. Probar endpoints
+curl http://localhost:3000/api/v1/persona/maria/count
+curl http://localhost:3000/api/v1/persona/mongo/count
+```
+
+### Obtener ayuda adicional
+
+Para más información detallada sobre problemas de Docker:
+- Consulta **[DOCKER.md](DOCKER.md)** para troubleshooting completo
+- Revisa los logs: `docker-compose logs -f`
+- Verifica el estado: `docker-compose ps`
+- Abre un issue en el repositorio de GitHub
 
 ## 📝 Notas Adicionales
 
-- **Bases de datos**: Puedes ejecutar ambas bases de datos simultáneamente (MariaDB usa puerto 3308, MongoDB usa puerto 27017)
-- **REST API**: MariaDB usa puerto 3000, MongoDB usa puerto 3001
-- **Profiles**: La aplicación usa Spring Profiles para cambiar entre bases de datos (`mariadb` o `mongodb`)
+- **Bases de datos**: Con Docker, ambas bases de datos corren simultáneamente (MariaDB en puerto 3308, MongoDB en puerto 27017)
+- **REST API**: Un solo servicio REST en puerto 3000 que se conecta a ambas bases de datos
+- **Datos iniciales**: Incluye automáticamente 8 personas, 6 profesiones, 9 teléfonos y 8 estudios en ambas bases de datos
+- **Health checks**: Docker espera a que las bases de datos estén completamente inicializadas antes de iniciar la API
+- **Volúmenes persistentes**: Los datos persisten entre reinicios de Docker (usa `docker-compose down -v` para limpiar)
 - **Logs**: Los logs se guardan en el directorio `logs/` del proyecto
+- **Frontend**: Se sirve automáticamente desde Spring Boot, no requiere servidor web separado
+- **Profiles**: La aplicación usa Spring Profiles para cambiar entre bases de datos (`mariadb` o `mongodb`)
 - **Fork**: Puedes hacer fork de este repositorio para tus propios experimentos
 
+## 🎯 Arquitectura de Despliegue con Docker
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    localhost:3000                            │
+│                   (Frontend + REST API)                      │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │         Spring Boot Application (Java 21)              │ │
+│  │  ┌──────────────┐  ┌──────────────┐                   │ │
+│  │  │   MariaDB    │  │   MongoDB    │                   │ │
+│  │  │   Adapter    │  │   Adapter    │                   │ │
+│  │  └───────┬──────┘  └──────┬───────┘                   │ │
+│  └──────────┼─────────────────┼──────────────────────────┘ │
+└─────────────┼─────────────────┼────────────────────────────┘
+              │                 │
+              ▼                 ▼
+    ┌─────────────────┐ ┌─────────────────┐
+    │    MariaDB      │ │    MongoDB      │
+    │ Port: 3308      │ │ Port: 27017     │
+    │ 8 personas      │ │ 8 personas      │
+    │ 6 profesiones   │ │ 6 profesiones   │
+    │ 9 teléfonos     │ │ 9 teléfonos     │
+    │ 8 estudios      │ │ 8 estudios      │
+    └─────────────────┘ └─────────────────┘
+```
+
+## 🔗 Enlaces Útiles
+
+- 📖 **[DOCKER.md](DOCKER.md)** - Documentación completa de Docker
+- ✅ **[DOCKER_SETUP_COMPLETE.md](DOCKER_SETUP_COMPLETE.md)** - Resumen de configuración completada
+- 🐳 **[docker-compose.yml](docker-compose.yml)** - Configuración de servicios Docker
+- 🛠️ **[docker-helper.ps1](docker-helper.ps1)** - Script de ayuda para comandos Docker
+- 📜 **[scripts/](scripts/)** - Scripts de inicialización de bases de datos
+
+## 📊 Estado del Proyecto
+
+- ✅ Backend completamente funcional con ambas bases de datos
+- ✅ Frontend web integrado con tablas hermosas
+- ✅ API REST documentada con Swagger
+- ✅ Dockerización completa con inicialización automática
+- ✅ Datos de ejemplo incluidos
+- ✅ Health checks implementados
+- ✅ CORS configurado
+- ✅ Logs persistentes
 
 **¿Necesitas ayuda?** Abre un issue en el repositorio de GitHub.

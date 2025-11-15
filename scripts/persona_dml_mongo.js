@@ -3,7 +3,7 @@
 // Descripción: Inserta datos de ejemplo en todas las colecciones
 // =====================================================
 
-db = db.getSiblingDB('persona_db')
+db = db.getSiblingDB('persona_db');
 
 // =====================================================
 // Colección: profesion

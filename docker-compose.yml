@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Base de datos MariaDB
+  mariadb:
+    image: mariadb:latest
+    container_name: personapp-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: persona_db
+      MYSQL_USER: persona_db
+      MYSQL_PASSWORD: persona_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+      - ./scripts/persona_ddl_maria.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./scripts/persona_dml_maria.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+      - ./scripts:/scripts
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - personapp-network
+
+  # Base de datos MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: personapp-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: persona_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/01-init-mongo.js:ro
+      - ./scripts/persona_ddl_mongo.js:/docker-entrypoint-initdb.d/02-schema.js:ro
+      - ./scripts/persona_dml_mongo.js:/docker-entrypoint-initdb.d/03-data.js:ro
+      - ./scripts:/scripts
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    networks:
+      - personapp-network
+
+  # Aplicación REST con ambas bases de datos disponibles
+  app-rest:
+    build:
+      context: .
+      target: rest
+    container_name: personapp-rest
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      # Configuración MariaDB
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/persona_db
+      SPRING_DATASOURCE_USERNAME: persona_db
+      SPRING_DATASOURCE_PASSWORD: persona_db
+      
+      # Configuración MongoDB
+      SPRING_DATA_MONGODB_HOST: mongodb
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: persona_db
+      SPRING_DATA_MONGODB_USERNAME: persona_db
+      SPRING_DATA_MONGODB_PASSWORD: persona_db
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+      
+      # Puerto de la aplicación
+      SERVER_PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - personapp-network
+    restart: unless-stopped
+
+volumes:
+  mariadb-data:
+    driver: local
+  mongodb-data:
+    driver: local
+
+networks:
+  personapp-network:
+    driver: bridge
