@@ -368,16 +368,5 @@ cat logs/application.log
 - **Logs**: Los logs se guardan en el directorio `logs/` del proyecto
 - **Fork**: Puedes hacer fork de este repositorio para tus propios experimentos
 
-## 📄 Licencia
-
-Apache License, Version 2.0
-
-## 👥 Autor
-
-**Andres Sanchez**  
-Pontificia Universidad Javeriana  
-asanchez-m@javeriana.edu.co
-
----
 
 **¿Necesitas ayuda?** Abre un issue en el repositorio de GitHub.
