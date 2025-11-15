@@ -235,21 +235,145 @@
         }
 
         .response-box {
-            background: #212529;
-            color: #00ff00;
+            background: #f8f9fa;
+            color: #212529;
             padding: 20px;
             border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            max-height: 400px;
+            max-height: 600px;
             overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
         }
 
         .response-box:empty::before {
             content: "Las respuestas aparecerán aquí...";
             color: #6c757d;
+            display: block;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 10px;
+        }
+
+        .info-message {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #bee5eb;
+            margin-bottom: 10px;
+        }
+
+        .count-display {
+            font-size: 3em;
+            font-weight: 700;
+            color: #667eea;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .count-label {
+            text-align: center;
+            color: #6c757d;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        .json-view {
+            background: #212529;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .alert {
@@ -668,20 +792,178 @@
             return document.getElementById('database').value;
         }
 
-        function showResponse(tabName, data, isError = false) {
+        function showResponse(tabName, data, isError = false, displayType = 'auto') {
             const responseBox = document.getElementById(`${tabName}-response`);
             const section = responseBox.closest('.response-section');
             const loader = section.querySelector('.loader');
             
             loader.style.display = 'none';
+            responseBox.innerHTML = '';
             
             if (isError) {
-                responseBox.style.color = '#ff4444';
-                responseBox.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-            } else {
-                responseBox.style.color = '#00ff00';
-                responseBox.textContent = JSON.stringify(data, null, 2);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = `<strong>❌ Error:</strong> ${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}`;
+                responseBox.appendChild(errorDiv);
+                return;
             }
+
+            // Determinar tipo de visualización
+            if (displayType === 'count') {
+                showCountDisplay(responseBox, data);
+            } else if (displayType === 'list' && Array.isArray(data)) {
+                showTableDisplay(responseBox, data, tabName);
+            } else if (displayType === 'single' && typeof data === 'object') {
+                showSingleItemDisplay(responseBox, data, tabName);
+            } else if (displayType === 'message') {
+                showMessageDisplay(responseBox, data);
+            } else {
+                // Auto-detectar
+                if (typeof data === 'number') {
+                    showCountDisplay(responseBox, data);
+                } else if (Array.isArray(data)) {
+                    if (data.length === 0) {
+                        showEmptyState(responseBox);
+                    } else {
+                        showTableDisplay(responseBox, data, tabName);
+                    }
+                } else if (typeof data === 'object' && data !== null) {
+                    showSingleItemDisplay(responseBox, data, tabName);
+                } else {
+                    showMessageDisplay(responseBox, data);
+                }
+            }
+        }
+
+        function showCountDisplay(container, count) {
+            const countDiv = document.createElement('div');
+            countDiv.innerHTML = `
+                <div class="count-display">${count}</div>
+                <div class="count-label">Registros encontrados</div>
+            `;
+            container.appendChild(countDiv);
+        }
+
+        function showEmptyState(container) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = `
+                <div class="empty-state-icon">📭</div>
+                <h3>No hay datos disponibles</h3>
+                <p>No se encontraron registros en la base de datos seleccionada</p>
+            `;
+            container.appendChild(emptyDiv);
+        }
+
+        function showMessageDisplay(container, message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'success-message';
+            messageDiv.innerHTML = `<strong>✅ Éxito:</strong> ${typeof message === 'string' ? message : JSON.stringify(message, null, 2)}`;
+            container.appendChild(messageDiv);
+        }
+
+        function showSingleItemDisplay(container, item, tabName) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info-message';
+            infoDiv.innerHTML = '<strong>📄 Detalle del Registro:</strong>';
+            container.appendChild(infoDiv);
+
+            const table = document.createElement('table');
+            table.className = 'data-table';
+            
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            
+            // Crear encabezado
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>Campo</th><th>Valor</th>';
+            thead.appendChild(headerRow);
+            
+            // Crear filas de datos
+            for (const [key, value] of Object.entries(item)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${formatFieldName(key)}</strong></td>
+                    <td>${formatFieldValue(value)}</td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        function showTableDisplay(container, data, tabName) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info-message';
+            infoDiv.innerHTML = `<strong>📊 ${data.length} registros encontrados</strong>`;
+            container.appendChild(infoDiv);
+
+            if (data.length === 0) {
+                showEmptyState(container);
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'data-table';
+            
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            
+            // Obtener columnas del primer objeto
+            const columns = Object.keys(data[0]);
+            
+            // Crear encabezado
+            const headerRow = document.createElement('tr');
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = formatFieldName(col);
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            
+            // Crear filas de datos
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    td.innerHTML = formatFieldValue(item[col]);
+                    row.appendChild(td);
+                });
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        function formatFieldName(fieldName) {
+            // Convertir camelCase a Title Case con espacios
+            return fieldName
+                .replace(/([A-Z])/g, ' $1')
+                .replace(/^./, str => str.toUpperCase())
+                .trim();
+        }
+
+        function formatFieldValue(value) {
+            if (value === null || value === undefined) {
+                return '<span class="badge badge-warning">Sin datos</span>';
+            }
+            if (typeof value === 'boolean') {
+                return value 
+                    ? '<span class="badge badge-success">✓ Sí</span>' 
+                    : '<span class="badge badge-info">✗ No</span>';
+            }
+            if (typeof value === 'object') {
+                return JSON.stringify(value);
+            }
+            if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
+                // Formato de fecha
+                return `📅 ${new Date(value).toLocaleDateString('es-ES')}`;
+            }
+            return value;
         }
 
         function showLoader(tabName) {
@@ -730,13 +1012,13 @@
         async function listarPersonas() {
             showLoader('personas');
             const result = await fetchAPI(`/api/v1/persona/${getDatabase()}`, 'GET');
-            showResponse('personas', result.data, !result.success);
+            showResponse('personas', result.data, !result.success, 'list');
         }
 
         async function contarPersonas() {
             showLoader('personas');
             const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/count`, 'GET');
-            showResponse('personas', result.data, !result.success);
+            showResponse('personas', result.data, !result.success, 'count');
         }
 
         async function buscarPersona() {
@@ -747,7 +1029,7 @@
             }
             showLoader('personas');
             const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/${dni}`, 'GET');
-            showResponse('personas', result.data, !result.success);
+            showResponse('personas', result.data, !result.success, 'single');
         }
 
         async function crearPersona() {
@@ -767,7 +1049,17 @@
 
             showLoader('personas');
             const result = await fetchAPI('/api/v1/persona', 'POST', body);
-            showResponse('personas', result.data, !result.success);
+            if (result.success) {
+                showResponse('personas', 'Persona creada exitosamente', false, 'message');
+                // Limpiar formulario
+                document.getElementById('crearPersonaDni').value = '';
+                document.getElementById('crearPersonaNombre').value = '';
+                document.getElementById('crearPersonaApellido').value = '';
+                document.getElementById('crearPersonaEdad').value = '';
+                document.getElementById('crearPersonaSexo').value = '';
+            } else {
+                showResponse('personas', result.data, true);
+            }
         }
 
         async function actualizarPersona() {
@@ -788,7 +1080,11 @@
 
             showLoader('personas');
             const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/${dni}`, 'PUT', body);
-            showResponse('personas', result.data, !result.success);
+            if (result.success) {
+                showResponse('personas', 'Persona actualizada exitosamente', false, 'message');
+            } else {
+                showResponse('personas', result.data, true);
+            }
         }
 
         async function eliminarPersona() {
@@ -797,22 +1093,30 @@
                 showResponse('personas', 'Por favor ingresa un DNI', true);
                 return;
             }
+            if (!confirm(`¿Estás seguro de eliminar la persona con DNI ${dni}?`)) {
+                return;
+            }
             showLoader('personas');
             const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/${dni}`, 'DELETE');
-            showResponse('personas', result.data, !result.success);
+            if (result.success) {
+                showResponse('personas', 'Persona eliminada exitosamente', false, 'message');
+                document.getElementById('eliminarPersonaDni').value = '';
+            } else {
+                showResponse('personas', result.data, true);
+            }
         }
 
         // ============= TELEFONOS =============
         async function listarTelefonos() {
             showLoader('telefonos');
             const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}`, 'GET');
-            showResponse('telefonos', result.data, !result.success);
+            showResponse('telefonos', result.data, !result.success, 'list');
         }
 
         async function contarTelefonos() {
             showLoader('telefonos');
             const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/count`, 'GET');
-            showResponse('telefonos', result.data, !result.success);
+            showResponse('telefonos', result.data, !result.success, 'count');
         }
 
         async function buscarTelefono() {
@@ -823,7 +1127,7 @@
             }
             showLoader('telefonos');
             const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/${number}`, 'GET');
-            showResponse('telefonos', result.data, !result.success);
+            showResponse('telefonos', result.data, !result.success, 'single');
         }
 
         async function crearTelefono() {
@@ -841,7 +1145,14 @@
 
             showLoader('telefonos');
             const result = await fetchAPI('/api/v1/telefono', 'POST', body);
-            showResponse('telefonos', result.data, !result.success);
+            if (result.success) {
+                showResponse('telefonos', 'Teléfono creado exitosamente', false, 'message');
+                document.getElementById('crearTelefonoNum').value = '';
+                document.getElementById('crearTelefonoCompania').value = '';
+                document.getElementById('crearTelefonoDni').value = '';
+            } else {
+                showResponse('telefonos', result.data, true);
+            }
         }
 
         async function actualizarTelefono() {
@@ -860,7 +1171,11 @@
 
             showLoader('telefonos');
             const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/${number}`, 'PUT', body);
-            showResponse('telefonos', result.data, !result.success);
+            if (result.success) {
+                showResponse('telefonos', 'Teléfono actualizado exitosamente', false, 'message');
+            } else {
+                showResponse('telefonos', result.data, true);
+            }
         }
 
         async function eliminarTelefono() {
@@ -869,22 +1184,30 @@
                 showResponse('telefonos', 'Por favor ingresa un número', true);
                 return;
             }
+            if (!confirm(`¿Estás seguro de eliminar el teléfono ${number}?`)) {
+                return;
+            }
             showLoader('telefonos');
             const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/${number}`, 'DELETE');
-            showResponse('telefonos', result.data, !result.success);
+            if (result.success) {
+                showResponse('telefonos', 'Teléfono eliminado exitosamente', false, 'message');
+                document.getElementById('eliminarTelefonoNum').value = '';
+            } else {
+                showResponse('telefonos', result.data, true);
+            }
         }
 
         // ============= PROFESIONES =============
         async function listarProfesiones() {
             showLoader('profesiones');
             const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}`, 'GET');
-            showResponse('profesiones', result.data, !result.success);
+            showResponse('profesiones', result.data, !result.success, 'list');
         }
 
         async function contarProfesiones() {
             showLoader('profesiones');
             const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/count`, 'GET');
-            showResponse('profesiones', result.data, !result.success);
+            showResponse('profesiones', result.data, !result.success, 'count');
         }
 
         async function buscarProfesion() {
@@ -895,7 +1218,7 @@
             }
             showLoader('profesiones');
             const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/${id}`, 'GET');
-            showResponse('profesiones', result.data, !result.success);
+            showResponse('profesiones', result.data, !result.success, 'single');
         }
 
         async function crearProfesion() {
@@ -913,7 +1236,14 @@
 
             showLoader('profesiones');
             const result = await fetchAPI('/api/v1/profesion', 'POST', body);
-            showResponse('profesiones', result.data, !result.success);
+            if (result.success) {
+                showResponse('profesiones', 'Profesión creada exitosamente', false, 'message');
+                document.getElementById('crearProfesionId').value = '';
+                document.getElementById('crearProfesionNombre').value = '';
+                document.getElementById('crearProfesionDesc').value = '';
+            } else {
+                showResponse('profesiones', result.data, true);
+            }
         }
 
         async function actualizarProfesion() {
@@ -932,7 +1262,11 @@
 
             showLoader('profesiones');
             const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/${id}`, 'PUT', body);
-            showResponse('profesiones', result.data, !result.success);
+            if (result.success) {
+                showResponse('profesiones', 'Profesión actualizada exitosamente', false, 'message');
+            } else {
+                showResponse('profesiones', result.data, true);
+            }
         }
 
         async function eliminarProfesion() {
@@ -941,22 +1275,30 @@
                 showResponse('profesiones', 'Por favor ingresa un ID', true);
                 return;
             }
+            if (!confirm(`¿Estás seguro de eliminar la profesión con ID ${id}?`)) {
+                return;
+            }
             showLoader('profesiones');
             const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/${id}`, 'DELETE');
-            showResponse('profesiones', result.data, !result.success);
+            if (result.success) {
+                showResponse('profesiones', 'Profesión eliminada exitosamente', false, 'message');
+                document.getElementById('eliminarProfesionId').value = '';
+            } else {
+                showResponse('profesiones', result.data, true);
+            }
         }
 
         // ============= ESTUDIOS =============
         async function listarEstudios() {
             showLoader('estudios');
             const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}`, 'GET');
-            showResponse('estudios', result.data, !result.success);
+            showResponse('estudios', result.data, !result.success, 'list');
         }
 
         async function contarEstudios() {
             showLoader('estudios');
             const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/count`, 'GET');
-            showResponse('estudios', result.data, !result.success);
+            showResponse('estudios', result.data, !result.success, 'count');
         }
 
         async function buscarEstudio() {
@@ -968,7 +1310,7 @@
             }
             showLoader('estudios');
             const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/${profId}/${dni}`, 'GET');
-            showResponse('estudios', result.data, !result.success);
+            showResponse('estudios', result.data, !result.success, 'single');
         }
 
         async function crearEstudio() {
@@ -987,7 +1329,15 @@
 
             showLoader('estudios');
             const result = await fetchAPI('/api/v1/estudios', 'POST', body);
-            showResponse('estudios', result.data, !result.success);
+            if (result.success) {
+                showResponse('estudios', 'Estudio creado exitosamente', false, 'message');
+                document.getElementById('crearEstudioProfId').value = '';
+                document.getElementById('crearEstudioDni').value = '';
+                document.getElementById('crearEstudioFecha').value = '';
+                document.getElementById('crearEstudioUniv').value = '';
+            } else {
+                showResponse('estudios', result.data, true);
+            }
         }
 
         async function actualizarEstudio() {
@@ -1009,7 +1359,11 @@
 
             showLoader('estudios');
             const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/${profId}/${dni}`, 'PUT', body);
-            showResponse('estudios', result.data, !result.success);
+            if (result.success) {
+                showResponse('estudios', 'Estudio actualizado exitosamente', false, 'message');
+            } else {
+                showResponse('estudios', result.data, true);
+            }
         }
 
         async function eliminarEstudio() {
@@ -1021,9 +1375,19 @@
                 return;
             }
             
+            if (!confirm(`¿Estás seguro de eliminar el estudio?`)) {
+                return;
+            }
+            
             showLoader('estudios');
             const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/${profId}/${dni}`, 'DELETE');
-            showResponse('estudios', result.data, !result.success);
+            if (result.success) {
+                showResponse('estudios', 'Estudio eliminado exitosamente', false, 'message');
+                document.getElementById('eliminarEstudioProfId').value = '';
+                document.getElementById('eliminarEstudioDni').value = '';
+            } else {
+                showResponse('estudios', result.data, true);
+            }
         }
     </script>
 </body>
