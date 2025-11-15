@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersonApp - API Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .config-section {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .config-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .config-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        .config-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .config-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .operations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .operation-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .operation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .operation-card h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .response-section {
+            margin-top: 30px;
+        }
+
+        .response-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .response-box {
+            background: #212529;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .response-box:empty::before {
+            content: "Las respuestas aparecerán aquí...";
+            color: #6c757d;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading .loader {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .operations {
+                grid-template-columns: 1fr;
+            }
+
+            .config-row {
+                flex-direction: column;
+            }
+
+            .config-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PersonApp API Client</h1>
+            <p>Gestión completa de Personas, Teléfonos, Profesiones y Estudios</p>
+        </div>
+
+        <div class="config-section">
+            <div class="config-row">
+                <div class="config-group">
+                    <label for="database">🗄️ Base de Datos:</label>
+                    <select id="database">
+                        <option value="maria">MariaDB</option>
+                        <option value="mongo">MongoDB</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('personas')">👤 Personas</button>
+            <button class="tab" onclick="switchTab('telefonos')">📱 Teléfonos</button>
+            <button class="tab" onclick="switchTab('profesiones')">💼 Profesiones</button>
+            <button class="tab" onclick="switchTab('estudios')">🎓 Estudios</button>
+        </div>
+
+        <!-- PERSONAS TAB -->
+        <div id="personas-tab" class="tab-content active">
+            <div class="alert alert-info">
+                📋 Gestiona todas las operaciones relacionadas con Personas
+            </div>
+
+            <div class="operations">
+                <!-- Listar todas las personas -->
+                <div class="operation-card">
+                    <h3>📋 Listar Todas</h3>
+                    <button class="btn btn-primary" onclick="listarPersonas()">Obtener Todas las Personas</button>
+                </div>
+
+                <!-- Contar personas -->
+                <div class="operation-card">
+                    <h3>🔢 Contar Personas</h3>
+                    <button class="btn btn-primary" onclick="contarPersonas()">Contar Registros</button>
+                </div>
+
+                <!-- Buscar persona por DNI -->
+                <div class="operation-card">
+                    <h3>🔍 Buscar por DNI</h3>
+                    <div class="form-group">
+                        <label>DNI:</label>
+                        <input type="text" id="buscarPersonaDni" placeholder="123456789">
+                    </div>
+                    <button class="btn btn-primary" onclick="buscarPersona()">Buscar</button>
+                </div>
+
+                <!-- Crear persona -->
+                <div class="operation-card">
+                    <h3>➕ Crear Persona</h3>
+                    <div class="form-group">
+                        <label>DNI:</label>
+                        <input type="text" id="crearPersonaDni" placeholder="123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="crearPersonaNombre" placeholder="Juan">
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido:</label>
+                        <input type="text" id="crearPersonaApellido" placeholder="Pérez">
+                    </div>
+                    <div class="form-group">
+                        <label>Edad:</label>
+                        <input type="text" id="crearPersonaEdad" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Sexo:</label>
+                        <input type="text" id="crearPersonaSexo" placeholder="M/F">
+                    </div>
+                    <button class="btn btn-success" onclick="crearPersona()">Crear</button>
+                </div>
+
+                <!-- Actualizar persona -->
+                <div class="operation-card">
+                    <h3>✏️ Actualizar Persona</h3>
+                    <div class="form-group">
+                        <label>DNI (a actualizar):</label>
+                        <input type="text" id="actualizarPersonaDni" placeholder="123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="actualizarPersonaNombre" placeholder="Juan">
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido:</label>
+                        <input type="text" id="actualizarPersonaApellido" placeholder="Pérez">
+                    </div>
+                    <div class="form-group">
+                        <label>Edad:</label>
+                        <input type="text" id="actualizarPersonaEdad" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Sexo:</label>
+                        <input type="text" id="actualizarPersonaSexo" placeholder="M/F">
+                    </div>
+                    <button class="btn btn-warning" onclick="actualizarPersona()">Actualizar</button>
+                </div>
+
+                <!-- Eliminar persona -->
+                <div class="operation-card">
+                    <h3>🗑️ Eliminar Persona</h3>
+                    <div class="form-group">
+                        <label>DNI:</label>
+                        <input type="text" id="eliminarPersonaDni" placeholder="123456789">
+                    </div>
+                    <button class="btn btn-danger" onclick="eliminarPersona()">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="response-section">
+                <h3>📤 Respuesta del Servidor:</h3>
+                <div class="loader"></div>
+                <div class="response-box" id="personas-response"></div>
+            </div>
+        </div>
+
+        <!-- TELEFONOS TAB -->
+        <div id="telefonos-tab" class="tab-content">
+            <div class="alert alert-info">
+                📱 Gestiona todas las operaciones relacionadas con Teléfonos
+            </div>
+
+            <div class="operations">
+                <div class="operation-card">
+                    <h3>📋 Listar Todos</h3>
+                    <button class="btn btn-primary" onclick="listarTelefonos()">Obtener Todos los Teléfonos</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🔢 Contar Teléfonos</h3>
+                    <button class="btn btn-primary" onclick="contarTelefonos()">Contar Registros</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🔍 Buscar por Número</h3>
+                    <div class="form-group">
+                        <label>Número:</label>
+                        <input type="text" id="buscarTelefonoNum" placeholder="3001234567">
+                    </div>
+                    <button class="btn btn-primary" onclick="buscarTelefono()">Buscar</button>
+                </div>
+                <div class="operation-card">
+                    <h3>➕ Crear Teléfono</h3>
+                    <div class="form-group">
+                        <label>Número:</label>
+                        <input type="text" id="crearTelefonoNum" placeholder="3001234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Compañía:</label>
+                        <input type="text" id="crearTelefonoCompania" placeholder="Claro">
+                    </div>
+                    <div class="form-group">
+                        <label>DNI del Propietario:</label>
+                        <input type="text" id="crearTelefonoDni" placeholder="123456789">
+                    </div>
+                    <button class="btn btn-success" onclick="crearTelefono()">Crear</button>
+                </div>
+                <div class="operation-card">
+                    <h3>✏️ Actualizar Teléfono</h3>
+                    <div class="form-group">
+                        <label>Número (a actualizar):</label>
+                        <input type="text" id="actualizarTelefonoNum" placeholder="3001234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Compañía:</label>
+                        <input type="text" id="actualizarTelefonoCompania" placeholder="Claro">
+                    </div>
+                    <div class="form-group">
+                        <label>DNI del Propietario:</label>
+                        <input type="text" id="actualizarTelefonoDni" placeholder="123456789">
+                    </div>
+                    <button class="btn btn-warning" onclick="actualizarTelefono()">Actualizar</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🗑️ Eliminar Teléfono</h3>
+                    <div class="form-group">
+                        <label>Número:</label>
+                        <input type="text" id="eliminarTelefonoNum" placeholder="3001234567">
+                    </div>
+                    <button class="btn btn-danger" onclick="eliminarTelefono()">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="response-section">
+                <h3>📤 Respuesta del Servidor:</h3>
+                <div class="loader"></div>
+                <div class="response-box" id="telefonos-response"></div>
+            </div>
+        </div>
+
+        <!-- PROFESIONES TAB -->
+        <div id="profesiones-tab" class="tab-content">
+            <div class="alert alert-info">
+                💼 Gestiona todas las operaciones relacionadas con Profesiones
+            </div>
+
+            <div class="operations">
+                <div class="operation-card">
+                    <h3>📋 Listar Todas</h3>
+                    <button class="btn btn-primary" onclick="listarProfesiones()">Obtener Todas las Profesiones</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🔢 Contar Profesiones</h3>
+                    <button class="btn btn-primary" onclick="contarProfesiones()">Contar Registros</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🔍 Buscar por ID</h3>
+                    <div class="form-group">
+                        <label>ID:</label>
+                        <input type="text" id="buscarProfesionId" placeholder="1">
+                    </div>
+                    <button class="btn btn-primary" onclick="buscarProfesion()">Buscar</button>
+                </div>
+                <div class="operation-card">
+                    <h3>➕ Crear Profesión</h3>
+                    <div class="form-group">
+                        <label>ID:</label>
+                        <input type="text" id="crearProfesionId" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="crearProfesionNombre" placeholder="Ingeniero">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción:</label>
+                        <textarea id="crearProfesionDesc" placeholder="Descripción de la profesión"></textarea>
+                    </div>
+                    <button class="btn btn-success" onclick="crearProfesion()">Crear</button>
+                </div>
+                <div class="operation-card">
+                    <h3>✏️ Actualizar Profesión</h3>
+                    <div class="form-group">
+                        <label>ID (a actualizar):</label>
+                        <input type="text" id="actualizarProfesionId" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="actualizarProfesionNombre" placeholder="Ingeniero">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción:</label>
+                        <textarea id="actualizarProfesionDesc" placeholder="Descripción de la profesión"></textarea>
+                    </div>
+                    <button class="btn btn-warning" onclick="actualizarProfesion()">Actualizar</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🗑️ Eliminar Profesión</h3>
+                    <div class="form-group">
+                        <label>ID:</label>
+                        <input type="text" id="eliminarProfesionId" placeholder="1">
+                    </div>
+                    <button class="btn btn-danger" onclick="eliminarProfesion()">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="response-section">
+                <h3>📤 Respuesta del Servidor:</h3>
+                <div class="loader"></div>
+                <div class="response-box" id="profesiones-response"></div>
+            </div>
+        </div>
+
+        <!-- ESTUDIOS TAB -->
+        <div id="estudios-tab" class="tab-content">
+            <div class="alert alert-info">
+                🎓 Gestiona todas las operaciones relacionadas con Estudios
+            </div>
+
+            <div class="operations">
+                <div class="operation-card">
+                    <h3>📋 Listar Todos</h3>
+                    <button class="btn btn-primary" onclick="listarEstudios()">Obtener Todos los Estudios</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🔢 Contar Estudios</h3>
+                    <button class="btn btn-primary" onclick="contarEstudios()">Contar Registros</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🔍 Buscar Estudio</h3>
+                    <div class="form-group">
+                        <label>ID Profesión:</label>
+                        <input type="text" id="buscarEstudioProfId" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>DNI Persona:</label>
+                        <input type="text" id="buscarEstudioDni" placeholder="123456789">
+                    </div>
+                    <button class="btn btn-primary" onclick="buscarEstudio()">Buscar</button>
+                </div>
+                <div class="operation-card">
+                    <h3>➕ Crear Estudio</h3>
+                    <div class="form-group">
+                        <label>ID Profesión:</label>
+                        <input type="text" id="crearEstudioProfId" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>DNI Persona:</label>
+                        <input type="text" id="crearEstudioDni" placeholder="123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Graduación:</label>
+                        <input type="date" id="crearEstudioFecha">
+                    </div>
+                    <div class="form-group">
+                        <label>Universidad:</label>
+                        <input type="text" id="crearEstudioUniv" placeholder="Universidad Javeriana">
+                    </div>
+                    <button class="btn btn-success" onclick="crearEstudio()">Crear</button>
+                </div>
+                <div class="operation-card">
+                    <h3>✏️ Actualizar Estudio</h3>
+                    <div class="form-group">
+                        <label>ID Profesión (a actualizar):</label>
+                        <input type="text" id="actualizarEstudioProfId" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>DNI Persona (a actualizar):</label>
+                        <input type="text" id="actualizarEstudioDni" placeholder="123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Graduación:</label>
+                        <input type="date" id="actualizarEstudioFecha">
+                    </div>
+                    <div class="form-group">
+                        <label>Universidad:</label>
+                        <input type="text" id="actualizarEstudioUniv" placeholder="Universidad Javeriana">
+                    </div>
+                    <button class="btn btn-warning" onclick="actualizarEstudio()">Actualizar</button>
+                </div>
+                <div class="operation-card">
+                    <h3>🗑️ Eliminar Estudio</h3>
+                    <div class="form-group">
+                        <label>ID Profesión:</label>
+                        <input type="text" id="eliminarEstudioProfId" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>DNI Persona:</label>
+                        <input type="text" id="eliminarEstudioDni" placeholder="123456789">
+                    </div>
+                    <button class="btn btn-danger" onclick="eliminarEstudio()">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="response-section">
+                <h3>📤 Respuesta del Servidor:</h3>
+                <div class="loader"></div>
+                <div class="response-box" id="estudios-response"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Utilidades - API URL es relativa (mismo servidor)
+        function getDatabase() {
+            return document.getElementById('database').value;
+        }
+
+        function showResponse(tabName, data, isError = false) {
+            const responseBox = document.getElementById(`${tabName}-response`);
+            const section = responseBox.closest('.response-section');
+            const loader = section.querySelector('.loader');
+            
+            loader.style.display = 'none';
+            
+            if (isError) {
+                responseBox.style.color = '#ff4444';
+                responseBox.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            } else {
+                responseBox.style.color = '#00ff00';
+                responseBox.textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        function showLoader(tabName) {
+            const responseBox = document.getElementById(`${tabName}-response`);
+            const section = responseBox.closest('.response-section');
+            const loader = section.querySelector('.loader');
+            
+            loader.style.display = 'block';
+            responseBox.textContent = '';
+        }
+
+        async function fetchAPI(endpoint, method = 'GET', body = null) {
+            const url = endpoint; // Ruta relativa - mismo servidor
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                return { success: response.ok, data };
+            } catch (error) {
+                return { success: false, data: `Error: ${error.message}` };
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============= PERSONAS =============
+        async function listarPersonas() {
+            showLoader('personas');
+            const result = await fetchAPI(`/api/v1/persona/${getDatabase()}`, 'GET');
+            showResponse('personas', result.data, !result.success);
+        }
+
+        async function contarPersonas() {
+            showLoader('personas');
+            const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/count`, 'GET');
+            showResponse('personas', result.data, !result.success);
+        }
+
+        async function buscarPersona() {
+            const dni = document.getElementById('buscarPersonaDni').value;
+            if (!dni) {
+                showResponse('personas', 'Por favor ingresa un DNI', true);
+                return;
+            }
+            showLoader('personas');
+            const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/${dni}`, 'GET');
+            showResponse('personas', result.data, !result.success);
+        }
+
+        async function crearPersona() {
+            const body = {
+                dni: document.getElementById('crearPersonaDni').value,
+                firstName: document.getElementById('crearPersonaNombre').value,
+                lastName: document.getElementById('crearPersonaApellido').value,
+                age: document.getElementById('crearPersonaEdad').value,
+                sex: document.getElementById('crearPersonaSexo').value,
+                database: getDatabase()
+            };
+
+            if (!body.dni || !body.firstName || !body.lastName) {
+                showResponse('personas', 'Por favor completa los campos obligatorios', true);
+                return;
+            }
+
+            showLoader('personas');
+            const result = await fetchAPI('/api/v1/persona', 'POST', body);
+            showResponse('personas', result.data, !result.success);
+        }
+
+        async function actualizarPersona() {
+            const dni = document.getElementById('actualizarPersonaDni').value;
+            if (!dni) {
+                showResponse('personas', 'Por favor ingresa un DNI', true);
+                return;
+            }
+
+            const body = {
+                dni: dni,
+                firstName: document.getElementById('actualizarPersonaNombre').value,
+                lastName: document.getElementById('actualizarPersonaApellido').value,
+                age: document.getElementById('actualizarPersonaEdad').value,
+                sex: document.getElementById('actualizarPersonaSexo').value,
+                database: getDatabase()
+            };
+
+            showLoader('personas');
+            const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/${dni}`, 'PUT', body);
+            showResponse('personas', result.data, !result.success);
+        }
+
+        async function eliminarPersona() {
+            const dni = document.getElementById('eliminarPersonaDni').value;
+            if (!dni) {
+                showResponse('personas', 'Por favor ingresa un DNI', true);
+                return;
+            }
+            showLoader('personas');
+            const result = await fetchAPI(`/api/v1/persona/${getDatabase()}/${dni}`, 'DELETE');
+            showResponse('personas', result.data, !result.success);
+        }
+
+        // ============= TELEFONOS =============
+        async function listarTelefonos() {
+            showLoader('telefonos');
+            const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}`, 'GET');
+            showResponse('telefonos', result.data, !result.success);
+        }
+
+        async function contarTelefonos() {
+            showLoader('telefonos');
+            const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/count`, 'GET');
+            showResponse('telefonos', result.data, !result.success);
+        }
+
+        async function buscarTelefono() {
+            const number = document.getElementById('buscarTelefonoNum').value;
+            if (!number) {
+                showResponse('telefonos', 'Por favor ingresa un número', true);
+                return;
+            }
+            showLoader('telefonos');
+            const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/${number}`, 'GET');
+            showResponse('telefonos', result.data, !result.success);
+        }
+
+        async function crearTelefono() {
+            const body = {
+                number: document.getElementById('crearTelefonoNum').value,
+                company: document.getElementById('crearTelefonoCompania').value,
+                ownerDni: document.getElementById('crearTelefonoDni').value,
+                database: getDatabase()
+            };
+
+            if (!body.number || !body.ownerDni) {
+                showResponse('telefonos', 'Por favor completa los campos obligatorios', true);
+                return;
+            }
+
+            showLoader('telefonos');
+            const result = await fetchAPI('/api/v1/telefono', 'POST', body);
+            showResponse('telefonos', result.data, !result.success);
+        }
+
+        async function actualizarTelefono() {
+            const number = document.getElementById('actualizarTelefonoNum').value;
+            if (!number) {
+                showResponse('telefonos', 'Por favor ingresa un número', true);
+                return;
+            }
+
+            const body = {
+                number: number,
+                company: document.getElementById('actualizarTelefonoCompania').value,
+                ownerDni: document.getElementById('actualizarTelefonoDni').value,
+                database: getDatabase()
+            };
+
+            showLoader('telefonos');
+            const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/${number}`, 'PUT', body);
+            showResponse('telefonos', result.data, !result.success);
+        }
+
+        async function eliminarTelefono() {
+            const number = document.getElementById('eliminarTelefonoNum').value;
+            if (!number) {
+                showResponse('telefonos', 'Por favor ingresa un número', true);
+                return;
+            }
+            showLoader('telefonos');
+            const result = await fetchAPI(`/api/v1/telefono/${getDatabase()}/${number}`, 'DELETE');
+            showResponse('telefonos', result.data, !result.success);
+        }
+
+        // ============= PROFESIONES =============
+        async function listarProfesiones() {
+            showLoader('profesiones');
+            const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}`, 'GET');
+            showResponse('profesiones', result.data, !result.success);
+        }
+
+        async function contarProfesiones() {
+            showLoader('profesiones');
+            const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/count`, 'GET');
+            showResponse('profesiones', result.data, !result.success);
+        }
+
+        async function buscarProfesion() {
+            const id = document.getElementById('buscarProfesionId').value;
+            if (!id) {
+                showResponse('profesiones', 'Por favor ingresa un ID', true);
+                return;
+            }
+            showLoader('profesiones');
+            const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/${id}`, 'GET');
+            showResponse('profesiones', result.data, !result.success);
+        }
+
+        async function crearProfesion() {
+            const body = {
+                id: document.getElementById('crearProfesionId').value,
+                name: document.getElementById('crearProfesionNombre').value,
+                description: document.getElementById('crearProfesionDesc').value,
+                database: getDatabase()
+            };
+
+            if (!body.id || !body.name) {
+                showResponse('profesiones', 'Por favor completa los campos obligatorios', true);
+                return;
+            }
+
+            showLoader('profesiones');
+            const result = await fetchAPI('/api/v1/profesion', 'POST', body);
+            showResponse('profesiones', result.data, !result.success);
+        }
+
+        async function actualizarProfesion() {
+            const id = document.getElementById('actualizarProfesionId').value;
+            if (!id) {
+                showResponse('profesiones', 'Por favor ingresa un ID', true);
+                return;
+            }
+
+            const body = {
+                id: id,
+                name: document.getElementById('actualizarProfesionNombre').value,
+                description: document.getElementById('actualizarProfesionDesc').value,
+                database: getDatabase()
+            };
+
+            showLoader('profesiones');
+            const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/${id}`, 'PUT', body);
+            showResponse('profesiones', result.data, !result.success);
+        }
+
+        async function eliminarProfesion() {
+            const id = document.getElementById('eliminarProfesionId').value;
+            if (!id) {
+                showResponse('profesiones', 'Por favor ingresa un ID', true);
+                return;
+            }
+            showLoader('profesiones');
+            const result = await fetchAPI(`/api/v1/profesion/${getDatabase()}/${id}`, 'DELETE');
+            showResponse('profesiones', result.data, !result.success);
+        }
+
+        // ============= ESTUDIOS =============
+        async function listarEstudios() {
+            showLoader('estudios');
+            const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}`, 'GET');
+            showResponse('estudios', result.data, !result.success);
+        }
+
+        async function contarEstudios() {
+            showLoader('estudios');
+            const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/count`, 'GET');
+            showResponse('estudios', result.data, !result.success);
+        }
+
+        async function buscarEstudio() {
+            const profId = document.getElementById('buscarEstudioProfId').value;
+            const dni = document.getElementById('buscarEstudioDni').value;
+            if (!profId || !dni) {
+                showResponse('estudios', 'Por favor completa ambos campos', true);
+                return;
+            }
+            showLoader('estudios');
+            const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/${profId}/${dni}`, 'GET');
+            showResponse('estudios', result.data, !result.success);
+        }
+
+        async function crearEstudio() {
+            const body = {
+                professionId: document.getElementById('crearEstudioProfId').value,
+                personDni: document.getElementById('crearEstudioDni').value,
+                graduationDate: document.getElementById('crearEstudioFecha').value,
+                universityName: document.getElementById('crearEstudioUniv').value,
+                database: getDatabase()
+            };
+
+            if (!body.professionId || !body.personDni) {
+                showResponse('estudios', 'Por favor completa los campos obligatorios', true);
+                return;
+            }
+
+            showLoader('estudios');
+            const result = await fetchAPI('/api/v1/estudios', 'POST', body);
+            showResponse('estudios', result.data, !result.success);
+        }
+
+        async function actualizarEstudio() {
+            const profId = document.getElementById('actualizarEstudioProfId').value;
+            const dni = document.getElementById('actualizarEstudioDni').value;
+            
+            if (!profId || !dni) {
+                showResponse('estudios', 'Por favor completa los campos de ID', true);
+                return;
+            }
+
+            const body = {
+                professionId: profId,
+                personDni: dni,
+                graduationDate: document.getElementById('actualizarEstudioFecha').value,
+                universityName: document.getElementById('actualizarEstudioUniv').value,
+                database: getDatabase()
+            };
+
+            showLoader('estudios');
+            const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/${profId}/${dni}`, 'PUT', body);
+            showResponse('estudios', result.data, !result.success);
+        }
+
+        async function eliminarEstudio() {
+            const profId = document.getElementById('eliminarEstudioProfId').value;
+            const dni = document.getElementById('eliminarEstudioDni').value;
+            
+            if (!profId || !dni) {
+                showResponse('estudios', 'Por favor completa ambos campos', true);
+                return;
+            }
+            
+            showLoader('estudios');
+            const result = await fetchAPI(`/api/v1/estudios/${getDatabase()}/${profId}/${dni}`, 'DELETE');
+            showResponse('estudios', result.data, !result.success);
+        }
+    </script>
+</body>
+</html>

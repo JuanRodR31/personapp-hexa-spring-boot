@@ -2,14 +2,27 @@
 
 Aplicación de ejemplo que implementa Arquitectura Hexagonal (Clean Architecture) con Spring Boot para la gestión de personas, profesiones, teléfonos y estudios.
 
+## ✨ Características Principales
+
+- 🏗️ **Arquitectura Hexagonal** - Separación clara de capas y responsabilidades
+- 🎨 **Frontend Web Integrado** - Interfaz gráfica moderna y responsive
+- 🔌 **Múltiples Adaptadores** - REST API y CLI
+- 💾 **Soporte Multi-Base de Datos** - MariaDB y MongoDB
+- 📚 **Documentación API** - Swagger/OpenAPI integrado
+- 🌐 **CORS Configurado** - Preparado para desarrollo cross-origin
+- 🐳 **Docker Ready** - Configuración completa con Docker Compose
+
 ## 📋 Tabla de Contenidos
 
+- [Características Principales](#características-principales)
 - [Requisitos Previos](#requisitos-previos)
 - [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 - [Configuración Inicial](#configuración-inicial)
 - [Ejecución con Docker](#ejecución-con-docker)
 - [Ejecución Local (sin Docker)](#ejecución-local-sin-docker)
 - [Acceso a las Aplicaciones](#acceso-a-las-aplicaciones)
+- [Frontend Web](#frontend-web)
+- [API REST](#api-rest)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Troubleshooting](#troubleshooting)
 
@@ -233,7 +246,30 @@ mvn spring-boot:run -Dspring-boot.run.profiles=mongodb
 
 ## 🌐 Acceso a las Aplicaciones
 
-### REST API
+### 🎨 Frontend Web (Interfaz Gráfica)
+
+La aplicación incluye un frontend web moderno y responsive integrado con Spring Boot.
+
+**URL de Acceso:**
+- **Local**: http://localhost:3000
+- **Docker MariaDB**: http://localhost:3000
+- **Docker MongoDB**: http://localhost:3001
+
+#### Características del Frontend:
+- ✅ Interfaz moderna y responsive
+- ✅ Gestión completa de CRUD para todas las entidades
+- ✅ Selector de base de datos (MariaDB/MongoDB)
+- ✅ Visualización de respuestas JSON en tiempo real
+- ✅ Indicadores de carga durante las peticiones
+- ✅ Sin necesidad de configuración adicional
+
+#### Módulos Disponibles:
+- 👤 **Personas** - Crear, listar, buscar, actualizar y eliminar personas
+- 📱 **Teléfonos** - Gestión completa de teléfonos asociados a personas
+- 💼 **Profesiones** - Administración de profesiones
+- 🎓 **Estudios** - Gestión de estudios (relación entre personas y profesiones)
+
+### 🔌 REST API
 
 **Con MariaDB:**
 - URL Base: http://localhost:3000
@@ -245,16 +281,6 @@ mvn spring-boot:run -Dspring-boot.run.profiles=mongodb
 - Swagger UI: http://localhost:3001/swagger-ui.html
 - API Docs: http://localhost:3001/v3/api-docs
 
-### Endpoints principales:
-- `GET /api/v1/persona` - Listar todas las personas
-- `POST /api/v1/persona` - Crear una persona
-- `GET /api/v1/persona/{cc}` - Obtener una persona por CC
-- `PUT /api/v1/persona/{cc}` - Actualizar una persona
-- `DELETE /api/v1/persona/{cc}` - Eliminar una persona
-- `GET /api/v1/profesion` - Listar todas las profesiones
-- `GET /api/v1/telefono` - Listar todos los teléfonos
-- `GET /api/v1/estudios` - Listar todos los estudios
-
 ### CLI (Interfaz de Línea de Comandos)
 
 La aplicación CLI proporciona un menú interactivo para gestionar:
@@ -263,7 +289,88 @@ La aplicación CLI proporciona un menú interactivo para gestionar:
 - Teléfonos
 - Estudios
 
-## 📁 Estructura del Proyecto
+## 🎨 Frontend Web
+
+### Características del Frontend Integrado
+
+El proyecto incluye un frontend web completo desarrollado en HTML, CSS y JavaScript vanilla, integrado directamente en Spring Boot.
+
+#### Tecnologías Utilizadas:
+- **HTML5** - Estructura semántica
+- **CSS3** - Diseño moderno con gradientes y animaciones
+- **JavaScript (ES6+)** - Funcionalidad dinámica con Fetch API
+- **Spring Boot Static Resources** - Servido automáticamente desde el classpath
+
+#### Ubicación del Frontend:
+```
+rest-input-adapter/src/main/resources/static/index.html
+```
+
+#### Funcionamiento:
+1. El frontend se sirve automáticamente desde Spring Boot
+2. Utiliza rutas relativas para las peticiones API (mismo servidor)
+3. No requiere configuración CORS adicional (mismo origen)
+4. Se empaqueta dentro del JAR ejecutable
+
+#### Modificar el Frontend:
+Si deseas personalizar el frontend:
+1. Edita el archivo `rest-input-adapter/src/main/resources/static/index.html`
+2. Recompila el proyecto: `mvn clean package -DskipTests`
+3. Reinicia la aplicación
+
+## � API REST
+
+### Endpoints Principales
+
+#### Personas (`/api/v1/persona`)
+- `GET /{database}` - Listar todas las personas
+- `GET /{database}/{dni}` - Obtener una persona por DNI
+- `GET /{database}/count` - Contar personas
+- `POST /` - Crear una persona
+- `PUT /{database}/{dni}` - Actualizar una persona
+- `DELETE /{database}/{dni}` - Eliminar una persona
+
+#### Teléfonos (`/api/v1/telefono`)
+- `GET /{database}` - Listar todos los teléfonos
+- `GET /{database}/{number}` - Obtener un teléfono por número
+- `GET /{database}/count` - Contar teléfonos
+- `POST /` - Crear un teléfono
+- `PUT /{database}/{number}` - Actualizar un teléfono
+- `DELETE /{database}/{number}` - Eliminar un teléfono
+
+#### Profesiones (`/api/v1/profesion`)
+- `GET /{database}` - Listar todas las profesiones
+- `GET /{database}/{id}` - Obtener una profesión por ID
+- `GET /{database}/count` - Contar profesiones
+- `POST /` - Crear una profesión
+- `PUT /{database}/{id}` - Actualizar una profesión
+- `DELETE /{database}/{id}` - Eliminar una profesión
+
+#### Estudios (`/api/v1/estudios`)
+- `GET /{database}` - Listar todos los estudios
+- `GET /{database}/{professionId}/{personDni}` - Obtener un estudio específico
+- `GET /{database}/count` - Contar estudios
+- `POST /` - Crear un estudio
+- `PUT /{database}/{professionId}/{personDni}` - Actualizar un estudio
+- `DELETE /{database}/{professionId}/{personDni}` - Eliminar un estudio
+
+**Nota**: `{database}` puede ser `maria` (MariaDB) o `mongo` (MongoDB)
+
+### Configuración CORS
+
+El proyecto incluye configuración CORS pre-configurada para desarrollo:
+
+**Ubicación**: `rest-input-adapter/src/main/java/co/edu/javeriana/as/personapp/config/CorsConfig.java`
+
+#### Características CORS:
+- ✅ Permite todos los orígenes en desarrollo
+- ✅ Soporta todos los métodos HTTP (GET, POST, PUT, DELETE, OPTIONS)
+- ✅ Permite todos los headers
+- ✅ Soporta credenciales
+
+**Nota de Producción**: Modifica la configuración CORS antes de desplegar a producción para restringir los orígenes permitidos.
+
+## �📁 Estructura del Proyecto
 
 ```
 personapp-hexa-spring-boot/
@@ -273,13 +380,28 @@ personapp-hexa-spring-boot/
 ├── domain/                   # Entidades y puertos del dominio
 ├── maria-output-adapter/     # Adaptador para MariaDB
 ├── mongo-output-adapter/     # Adaptador para MongoDB
-├── rest-input-adapter/       # Adaptador REST API
+├── rest-input-adapter/       # Adaptador REST API + Frontend
+│   └── src/main/
+│       ├── java/
+│       │   └── co/edu/javeriana/as/personapp/
+│       │       ├── config/
+│       │       │   └── CorsConfig.java       # Configuración CORS
+│       │       ├── controller/               # Controladores REST
+│       │       ├── mapper/                   # Mapeadores DTO
+│       │       └── model/                    # DTOs
+│       └── resources/
+│           ├── static/
+│           │   └── index.html                # Frontend integrado
+│           └── application.properties
+├── frontend/                 # Backup del frontend (no se usa en producción)
+│   └── index.html           # Versión standalone del frontend
 ├── scripts/                  # Scripts de base de datos
 │   ├── persona_ddl_maria.sql    # Esquema MariaDB
 │   ├── persona_dml_maria.sql    # Datos MariaDB
 │   ├── persona_ddl_mongo.js     # Esquema MongoDB
 │   ├── persona_dml_mongo.js     # Datos MongoDB
 │   └── init-mongo.js            # Inicialización MongoDB
+├── logs/                     # Directorio de logs (generado en runtime)
 ├── docker-compose-mariadb.yml   # Compose para MariaDB
 ├── docker-compose-mongodb.yml   # Compose para MongoDB
 ├── Dockerfile                   # Dockerfile multi-stage
