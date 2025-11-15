@@ -1,6 +1,5 @@
 package co.edu.javeriana.as.personapp.adapter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,8 +69,11 @@ public class PersonaInputAdapterRest {
 						.collect(Collectors.toList());
 			}
 		} catch (InvalidOptionException e) {
-			log.warn(e.getMessage());
-			return new ArrayList<>();
+			log.error("Invalid database option: {}", e.getMessage());
+			throw new RuntimeException("Invalid database option: " + database, e);
+		} catch (Exception e) {
+			log.error("Error retrieving persons: {}", e.getMessage(), e);
+			throw new RuntimeException("Error retrieving persons from database: " + database, e);
 		}
 	}
 
@@ -86,6 +88,95 @@ public class PersonaInputAdapterRest {
 			}
 		} catch (InvalidOptionException e) {
 			log.warn(e.getMessage());
+			return null;
+		}
+	}
+
+	public PersonaResponse obtenerPersona(String database, String dni) {
+		log.info("Into obtenerPersona in Input Adapter - database: {}, dni: {}", database, dni);
+		try {
+			String selected = configurePersistence(database);
+			Integer identification = Integer.parseInt(dni);
+			Person person = personUseCase.findOne(identification);
+			if (person == null) {
+				return null;
+			}
+			if (selected.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
+				return personaMapperRest.fromDomainToAdapterRestMaria(person);
+			} else {
+				return personaMapperRest.fromDomainToAdapterRestMongo(person);
+			}
+		} catch (InvalidOptionException e) {
+			log.error("Invalid database option: {}", e.getMessage());
+			throw new RuntimeException("Invalid database option: " + database, e);
+		} catch (NumberFormatException e) {
+			log.error("Invalid DNI format: {}", dni);
+			throw new RuntimeException("Invalid DNI format: " + dni, e);
+		} catch (Exception e) {
+			log.error("Error obtaining person: {}", e.getMessage(), e);
+			throw new RuntimeException("Error obtaining person " + dni + " from database: " + database, e);
+		}
+	}
+
+	public Integer contarPersonas(String database) {
+		log.info("Into contarPersonas in Input Adapter - database: {}", database);
+		try {
+			configurePersistence(database);
+			return personUseCase.count();
+		} catch (InvalidOptionException e) {
+			log.error("Invalid database option: {}", e.getMessage());
+			throw new RuntimeException("Invalid database option: " + database, e);
+		} catch (Exception e) {
+			log.error("Error counting persons: {}", e.getMessage(), e);
+			throw new RuntimeException("Error counting persons from database: " + database, e);
+		}
+	}
+
+	public PersonaResponse actualizarPersona(PersonaRequest request) {
+		log.info("Into actualizarPersona in Input Adapter");
+		try {
+			String selected = configurePersistence(request.getDatabase());
+			Integer identification = Integer.parseInt(request.getDni());
+			Person person = personaMapperRest.fromAdapterToDomain(request);
+			Person updatedPerson = personUseCase.edit(identification, person);
+			if (selected.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
+				return personaMapperRest.fromDomainToAdapterRestMaria(updatedPerson);
+			} else {
+				return personaMapperRest.fromDomainToAdapterRestMongo(updatedPerson);
+			}
+		} catch (InvalidOptionException e) {
+			log.warn(e.getMessage());
+			return null;
+		} catch (Exception e) {
+			log.warn("Error updating person: " + e.getMessage());
+			return null;
+		}
+	}
+
+	public PersonaResponse eliminarPersona(String database, String dni) {
+		log.info("Into eliminarPersona in Input Adapter - database: {}, dni: {}", database, dni);
+		try {
+			String selected = configurePersistence(database);
+			Integer identification = Integer.parseInt(dni);
+			// Obtener la persona antes de eliminarla para devolver su información
+			Person person = personUseCase.findOne(identification);
+			Boolean deleted = personUseCase.drop(identification);
+			if (deleted) {
+				PersonaResponse response;
+				if (selected.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
+					response = personaMapperRest.fromDomainToAdapterRestMaria(person);
+				} else {
+					response = personaMapperRest.fromDomainToAdapterRestMongo(person);
+				}
+				response.setStatus("Deleted successfully");
+				return response;
+			}
+			return null;
+		} catch (InvalidOptionException e) {
+			log.warn(e.getMessage());
+			return null;
+		} catch (Exception e) {
+			log.warn("Error deleting person: " + e.getMessage());
 			return null;
 		}
 	}

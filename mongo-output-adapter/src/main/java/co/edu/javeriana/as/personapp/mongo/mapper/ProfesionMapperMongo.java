@@ -55,4 +55,17 @@ public class ProfesionMapperMongo {
 				.map(estudio -> estudiosMapperMongo.fromAdapterToDomain(estudio)).collect(Collectors.toList())
 				: new ArrayList<Study>();
 	}
+	
+	// Method without relationships to avoid infinite recursion
+	public Profession fromAdapterToDomainWithoutRelations(ProfesionDocument profesionDocument) {
+		if (profesionDocument == null || profesionDocument.getId() == null) {
+			return null;
+		}
+		Profession profession = new Profession();
+		profession.setIdentification(profesionDocument.getId());
+		profession.setName(profesionDocument.getNom());
+		profession.setDescription(validateDescription(profesionDocument.getDes()));
+		profession.setStudies(new ArrayList<>()); // Empty list to break circular reference
+		return profession;
+	}
 }

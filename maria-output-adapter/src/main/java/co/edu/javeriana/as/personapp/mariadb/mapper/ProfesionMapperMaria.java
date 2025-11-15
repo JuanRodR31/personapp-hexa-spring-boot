@@ -55,4 +55,17 @@ public class ProfesionMapperMaria {
 				.map(estudio -> estudiosMapperMaria.fromAdapterToDomain(estudio)).collect(Collectors.toList())
 				: new ArrayList<Study>();
 	}
+	
+	// Method without relationships to avoid infinite recursion
+	public Profession fromAdapterToDomainWithoutRelations(ProfesionEntity profesionEntity) {
+		if (profesionEntity == null || profesionEntity.getId() == null) {
+			return null;
+		}
+		Profession profession = new Profession();
+		profession.setIdentification(profesionEntity.getId());
+		profession.setName(profesionEntity.getNom());
+		profession.setDescription(validateDescription(profesionEntity.getDes()));
+		profession.setStudies(new ArrayList<>()); // Empty list to break circular reference
+		return profession;
+	}
 }

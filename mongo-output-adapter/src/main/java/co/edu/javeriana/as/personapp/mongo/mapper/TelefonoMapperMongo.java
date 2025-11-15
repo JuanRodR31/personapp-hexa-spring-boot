@@ -36,6 +36,11 @@ public class TelefonoMapperMongo {
 	}
 
 	private @NonNull Person validateOwner(PersonaDocument duenio) {
-		return duenio != null ? personaMapperMongo.fromAdapterToDomain(duenio) : new Person();
+		// Usar el método sin relaciones para evitar recursión infinita
+		if (duenio == null) {
+			return new Person();
+		}
+		Person owner = personaMapperMongo.fromAdapterToDomainWithoutRelations(duenio);
+		return owner != null ? owner : new Person();
 	}
 }

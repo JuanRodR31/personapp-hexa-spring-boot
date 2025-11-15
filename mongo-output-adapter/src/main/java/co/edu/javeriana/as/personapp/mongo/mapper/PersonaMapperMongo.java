@@ -69,6 +69,28 @@ public class PersonaMapperMongo {
 		return person;
 	}
 
+	/**
+	 * Convierte PersonaDocument a Person sin incluir las relaciones bidireccionales (studies y phones)
+	 * para evitar recursión infinita en los mappers.
+	 */
+	public Person fromAdapterToDomainWithoutRelations(PersonaDocument personaDocument) {
+		// Validar que el documento no sea nulo y tenga un ID válido
+		if (personaDocument == null || personaDocument.getId() == null) {
+			return null;
+		}
+		
+		Person person = new Person();
+		person.setIdentification(personaDocument.getId());
+		person.setFirstName(personaDocument.getNombre());
+		person.setLastName(personaDocument.getApellido());
+		person.setGender(validateGender(personaDocument.getGenero()));
+		person.setAge(validateAge(personaDocument.getEdad()));
+		// No incluir studies ni phoneNumbers para evitar recursión infinita
+		person.setStudies(new ArrayList<>());
+		person.setPhoneNumbers(new ArrayList<>());
+		return person;
+	}
+
 	private @NonNull Gender validateGender(String genero) {
 		return "F".equals(genero) ? Gender.FEMALE : "M".equals(genero) ? Gender.MALE : Gender.OTHER;
 	}
