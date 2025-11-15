@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: personapp-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: persona_db
+      MYSQL_USER: persona_db
+      MYSQL_PASSWORD: persona_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./scripts:/scripts
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  app-rest:
+    build:
+      context: .
+      target: rest
+    container_name: personapp-rest-mariadb
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mariadb
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/persona_db
+      SPRING_DATASOURCE_USERNAME: persona_db
+      SPRING_DATASOURCE_PASSWORD: persona_db
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+
+  app-cli:
+    build:
+      context: .
+      target: cli
+    container_name: personapp-cli-mariadb  
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mariadb
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/persona_db
+      SPRING_DATASOURCE_USERNAME: persona_db
+      SPRING_DATASOURCE_PASSWORD: persona_db
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./logs:/app/logs

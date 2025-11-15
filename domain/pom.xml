@@ -11,4 +11,12 @@
 	<artifactId>domain</artifactId>
 	<name>PersonAPP Domain</name>
 	<description>Domain for PersonAPP</description>
+
+	<dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

@@ -36,6 +36,11 @@ public class TelefonoMapperMaria {
 	}
 
 	private @NonNull Person validateOwner(PersonaEntity duenio) {
-		return duenio != null ? personaMapperMaria.fromAdapterToDomain(duenio) : new Person();
+		// Usar el método sin relaciones para evitar recursión infinita
+		if (duenio == null) {
+			return new Person();
+		}
+		Person owner = personaMapperMaria.fromAdapterToDomainWithoutRelations(duenio);
+		return owner != null ? owner : new Person();
 	}
 }

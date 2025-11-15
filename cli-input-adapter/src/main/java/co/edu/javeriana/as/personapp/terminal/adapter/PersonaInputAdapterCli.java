@@ -20,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @Adapter
 public class PersonaInputAdapterCli {
 
-	@Autowired
+	@Autowired(required = false)
 	@Qualifier("personOutputAdapterMaria")
 	private PersonOutputPort personOutputPortMaria;
 
-	@Autowired
+	@Autowired(required = false)
 	@Qualifier("personOutputAdapterMongo")
 	private PersonOutputPort personOutputPortMongo;
 
@@ -35,9 +35,11 @@ public class PersonaInputAdapterCli {
 
 	public void setPersonOutputPortInjection(String dbOption) throws InvalidOptionException {
 		if (dbOption.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
-			personInputPort = new PersonUseCase(personOutputPortMaria);
+			personInputPort = new PersonUseCase();
+			personInputPort.setPersistence(personOutputPortMaria);
 		} else if (dbOption.equalsIgnoreCase(DatabaseOption.MONGO.toString())) {
-			personInputPort = new PersonUseCase(personOutputPortMongo);
+			personInputPort = new PersonUseCase();
+			personInputPort.setPersistence(personOutputPortMongo);
 		} else {
 			throw new InvalidOptionException("Invalid database option: " + dbOption);
 		}

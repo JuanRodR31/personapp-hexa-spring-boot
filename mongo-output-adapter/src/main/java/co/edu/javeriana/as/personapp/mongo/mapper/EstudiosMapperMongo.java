@@ -53,12 +53,22 @@ public class EstudiosMapperMongo {
 	}
 
 	public Study fromAdapterToDomain(EstudiosDocument estudiosDocument) {
+		if (estudiosDocument == null) {
+			return null;
+		}
+		
 		Study study = new Study();
-		study.setPerson(personaMapperMongo.fromAdapterToDomain(estudiosDocument.getPrimaryPersona()));
-		study.setProfession(profesionMapperMongo.fromAdapterToDomain(estudiosDocument.getPrimaryProfesion()));
+		// Evitar recursión infinita: crear Person y Profession sin sus relaciones bidireccionales
+		Person person = personaMapperMongo.fromAdapterToDomainWithoutRelations(estudiosDocument.getPrimaryPersona());
+		if (person == null) {
+			return null; // Si no hay persona válida, no podemos crear el estudio
+		}
+		study.setPerson(person);
+		// Usar fromAdapterToDomainWithoutRelations para romper el ciclo Profession <-> Study
+		study.setProfession(profesionMapperMongo.fromAdapterToDomainWithoutRelations(estudiosDocument.getPrimaryProfesion()));
 		study.setGraduationDate(validateGraduationDate(estudiosDocument.getFecha()));
 		study.setUniversityName(validateUniversityName(estudiosDocument.getUniver()));
-		return null;
+		return study;
 	}
 
 	private LocalDate validateGraduationDate(LocalDate fecha) {

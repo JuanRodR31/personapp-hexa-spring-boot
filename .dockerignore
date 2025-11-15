@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.iml
+*.iws
+
+# Maven (keep target JARs)
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/.mvn/timing.properties
+# Exclude target directories except the final JARs
+**/target/classes/
+**/target/generated-sources/
+**/target/generated-test-sources/
+**/target/maven-status/
+**/target/test-classes/
+**/target/*.jar.original
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+LICENSE

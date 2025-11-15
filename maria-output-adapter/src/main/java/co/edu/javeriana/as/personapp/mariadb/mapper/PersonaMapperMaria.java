@@ -69,6 +69,28 @@ public class PersonaMapperMaria {
 		return person;
 	}
 
+	/**
+	 * Convierte PersonaEntity a Person sin incluir las relaciones bidireccionales (studies y phones)
+	 * para evitar recursión infinita en los mappers.
+	 */
+	public Person fromAdapterToDomainWithoutRelations(PersonaEntity personaEntity) {
+		// Validar que la entidad no sea nula y tenga un ID válido
+		if (personaEntity == null || personaEntity.getCc() == null) {
+			return null;
+		}
+		
+		Person person = new Person();
+		person.setIdentification(personaEntity.getCc());
+		person.setFirstName(personaEntity.getNombre());
+		person.setLastName(personaEntity.getApellido());
+		person.setGender(validateGender(personaEntity.getGenero()));
+		person.setAge(validateAge(personaEntity.getEdad()));
+		// No incluir studies ni phoneNumbers para evitar recursión infinita
+		person.setStudies(new ArrayList<>());
+		person.setPhoneNumbers(new ArrayList<>());
+		return person;
+	}
+
 	private @NonNull Gender validateGender(Character genero) {
 		return genero == 'F' ? Gender.FEMALE : genero == 'M' ? Gender.MALE : Gender.OTHER;
 	}
